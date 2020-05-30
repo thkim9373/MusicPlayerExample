@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MusicPlayerExample</string>
+
+    <string name="album_divider">|</string>
+</resources>
