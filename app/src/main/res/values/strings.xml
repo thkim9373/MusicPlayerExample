@@ -2,4 +2,9 @@
     <string name="app_name">MusicPlayerExample</string>
 
     <string name="album_divider">|</string>
+
+    <string name="permission_dialog_title">Permission denied.</string>
+    <string name="permission_dialog_message">Please arrow permissions.</string>
+    <string name="setting">Setting</string>
+    <string name="cancel">Cancel</string>
 </resources>
