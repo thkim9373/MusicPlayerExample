@@ -5,21 +5,27 @@
 
     <data>
 
+        <variable
+            name="album"
+            type="com.hoony.musicplayerexample.data.Album" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cv_item"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp"
             app:cardUseCompatPadding="true"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.5">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/cl_card_container"
@@ -38,6 +44,18 @@
                     tools:src="@drawable/ic_launcher_background" />
 
                 <TextView
+                    android:id="@+id/tv_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:paddingTop="8dp"
+                    android:text="@{album.name}"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    app:layout_constraintTop_toBottomOf="@id/iv_album_art"
+                    tools:text="Name" />
+
+                <TextView
                     android:id="@+id/tv_divider"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -45,7 +63,7 @@
                     android:text="@string/album_divider"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/iv_album_art" />
+                    app:layout_constraintTop_toBottomOf="@id/tv_title" />
 
                 <TextView
                     android:id="@+id/tv_artist"
@@ -55,18 +73,19 @@
                     android:gravity="end"
                     android:marqueeRepeatLimit="marquee_forever"
                     android:singleLine="true"
+                    android:text="@{album.artist}"
                     app:layout_constraintBottom_toBottomOf="@id/tv_divider"
                     app:layout_constraintEnd_toStartOf="@id/tv_divider"
                     app:layout_constraintHorizontal_bias="1"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="@id/tv_divider"
-
                     tools:text="Artist" />
 
                 <TextView
                     android:id="@+id/tv_num_of_song"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:text="@{String.valueOf(album.numOfSong)}"
                     app:layout_constraintBottom_toBottomOf="@id/tv_divider"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0"

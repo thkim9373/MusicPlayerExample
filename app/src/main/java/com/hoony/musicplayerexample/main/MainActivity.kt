@@ -1,4 +1,4 @@
-package com.hoony.musicplayerexample.activity
+package com.hoony.musicplayerexample.main
 
 import android.Manifest
 import android.content.Intent
@@ -11,17 +11,17 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.viewpager2.widget.ViewPager2
 import com.hoony.musicplayerexample.R
-import com.hoony.musicplayerexample.view_model.MainViewModel
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_album_list.*
 
 class MainActivity : AppCompatActivity() {
 
     private val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
 
-    private val viewModel by viewModels<MainViewModel>()
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,19 +41,39 @@ class MainActivity : AppCompatActivity() {
     private fun createView() {
         setContentView(R.layout.activity_main)
 
-        rvAlbumList.layoutManager = GridLayoutManager(this, 2)
-
+        setView()
         setObserver()
+        setListener()
+    }
+
+    private fun setView() {
+        vpAlbum.orientation = ViewPager2.ORIENTATION_HORIZONTAL
+
+        rvAlbumList.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
+        rvAlbumList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
     }
 
     private fun setObserver() {
-        viewModel.fragmentsStackLiveData.observe(
+        viewModel.albumListLiveData.observe(
             this,
             Observer {
-                val fragmentTransaction = supportFragmentManager.beginTransaction()
-                fragmentTransaction.replace(mainFrameLayout.id, it.peek()).commit()
+                vpAlbum.adapter = AlbumPagerAdapter(it)
             }
         )
+        viewModel.musicListLiveData.observe(
+            this,
+            Observer {
+                rvAlbumList.adapter = MusicListAdapter(it)
+            }
+        )
+    }
+
+    private fun setListener() {
+        vpAlbum.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                viewModel.getMusicList(position)
+            }
+        })
     }
 
     override fun onRequestPermissionsResult(
