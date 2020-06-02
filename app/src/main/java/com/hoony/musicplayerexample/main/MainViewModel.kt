@@ -94,8 +94,10 @@ class MainViewModel(application: Application, private val state: SavedStateHandl
                 MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.DURATION
             ),
-            MediaStore.Audio.Media.ALBUM + "='" + album.name + "'",
-            null,
+            "${MediaStore.Audio.Media.ALBUM} = ?",
+            arrayOf(
+                album.name
+            ),
             null,
             null
         )

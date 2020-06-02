@@ -7,4 +7,6 @@
     <string name="permission_dialog_message">Please arrow permissions.</string>
     <string name="setting">Setting</string>
     <string name="cancel">Cancel</string>
+
+    <string name="notification_name_audio_player">Audio player</string>
 </resources>
