@@ -19,6 +19,10 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
+    enum class Tab(val id: Int) {
+        HOME(R.id.tab_home)
+    }
+
     private val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
 
     private val viewModel: MainViewModel by viewModels()
