@@ -1,16 +1,24 @@
 package com.hoony.musicplayerexample.service
 
-import android.media.browse.MediaBrowser
 import android.os.Bundle
-import android.service.media.MediaBrowserService
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.session.MediaSessionCompat
+import androidx.media.MediaBrowserServiceCompat
+import com.hoony.musicplayerexample.player.PlayerAdapter
 
-class MusicService : MediaBrowserService() {
+class MusicService : MediaBrowserServiceCompat() {
 
     companion object {
         private val TAG = MusicService::class.simpleName
     }
 
-    override fun onLoadChildren(p0: String, p1: Result<MutableList<MediaBrowser.MediaItem>>) {
+    private val mediaSession: MediaSessionCompat? = null
+    private val playback: PlayerAdapter? = null
+
+    override fun onLoadChildren(
+        parentId: String,
+        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
+    ) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
