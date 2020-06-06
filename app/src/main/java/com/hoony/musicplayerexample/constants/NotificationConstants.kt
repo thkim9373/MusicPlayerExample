@@ -1,5 +1,5 @@
 package com.hoony.musicplayerexample.constants
 
-enum class Notification {
+enum class NotificationConstants {
     CHANNEL_AUDIO_PLAYER
 }

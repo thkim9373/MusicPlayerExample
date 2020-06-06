@@ -6,7 +6,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import com.hoony.musicplayerexample.R
-import com.hoony.musicplayerexample.constants.Notification
+import com.hoony.musicplayerexample.constants.NotificationConstants
 
 class MyApp : Application() {
 
@@ -21,9 +21,9 @@ class MyApp : Application() {
             val notificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-            if (notificationManager.getNotificationChannel(Notification.CHANNEL_AUDIO_PLAYER.toString()) == null) {
+            if (notificationManager.getNotificationChannel(NotificationConstants.CHANNEL_AUDIO_PLAYER.toString()) == null) {
                 val notificationChannel = NotificationChannel(
-                    Notification.CHANNEL_AUDIO_PLAYER.toString(),
+                    NotificationConstants.CHANNEL_AUDIO_PLAYER.toString(),
                     resources.getString(R.string.notification_name_audio_player),
                     NotificationManager.IMPORTANCE_DEFAULT
                 )
