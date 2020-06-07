@@ -14,6 +14,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.media.session.MediaButtonReceiver
 import com.hoony.musicplayerexample.R
 import com.hoony.musicplayerexample.constants.NotificationConstants
@@ -101,6 +102,64 @@ class MediaNotificationManager(private val service: MusicService) {
         description: MediaDescriptionCompat
     ): NotificationCompat.Builder {
         // Create the (mandatory) notification channel when running on Android Oreo.
+        if (isOOrHigher()) {
+            createChannel()
+        }
+
+        val builder = NotificationCompat.Builder(service, CHANNEL_ID)
+        builder.apply {
+            setStyle(
+                androidx.media.app.NotificationCompat.MediaStyle()
+                    .setMediaSession(token)
+                    .setShowCancelButton(true)
+                    .setCancelButtonIntent(
+                        MediaButtonReceiver.buildMediaButtonPendingIntent(
+                            service,
+                            PlaybackStateCompat.ACTION_STOP
+                        )
+                    )
+            )
+            color = ContextCompat.getColor(service, R.color.notification_bg)
+            setSmallIcon(R.drawable.ic_launcher_background)
+            // Pending intent that is fired when user clicks on notification.
+            setContentIntent(createContentIntent())
+            // Title - Usually Song name.
+            setContentTitle(description.title)
+            // Subtitle - Usually Artist name.
+            setContentText(description.subtitle)
+
+            // TODO : setLargeIcon
+
+            // When notification is deleted (when playback is paused and notification can be
+            // deleted) fire MediaButtonPendingIntent with ACTION_STOP.
+            setDeleteIntent(
+                MediaButtonReceiver.buildMediaButtonPendingIntent(
+                    service, PlaybackStateCompat.ACTION_STOP
+                )
+            )
+            // Show controls on lock screen even when user hides sensitive content.
+            setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+        }
+
+        // TODO : Review the code below.
+        // If skip to prev action is enabled.
+        if (state.actions != PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS) {
+            builder.addAction(prevAction)
+        }
+
+        builder.addAction(
+            if (isPlaying)
+                pauseAction
+            else
+                playAction
+        )
+
+        // If skip to next action is enabled.
+        if (state.actions != PlaybackStateCompat.ACTION_SKIP_TO_NEXT) {
+            builder.addAction(nextAction)
+        }
+
+        return builder
     }
 
     // Does nothing on versions of Android earlier than O.
@@ -120,6 +179,9 @@ class MediaNotificationManager(private val service: MusicService) {
             // channel, if the device supports this feature.
             channel.lightColor = Color.RED
             channel.enableVibration(true)
+            channel.vibrationPattern = longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
+
+            notificationManager.createNotificationChannel(channel)
         }
     }
 

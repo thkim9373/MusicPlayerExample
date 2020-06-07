@@ -5,4 +5,5 @@
     <color name="colorAccent">#03DAC5</color>
 
     <color name="black">#000000</color>
+    <color name="notification_bg">#e91e63</color>
 </resources>
