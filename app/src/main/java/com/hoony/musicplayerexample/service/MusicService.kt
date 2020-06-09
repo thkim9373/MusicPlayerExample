@@ -5,8 +5,11 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import androidx.media.MediaBrowserServiceCompat
 import com.hoony.musicplayerexample.player.MediaNotificationManager
+import com.hoony.musicplayerexample.player.MusicLibrary
+import com.hoony.musicplayerexample.player.PlaybackInfoListener
 import com.hoony.musicplayerexample.player.PlayerAdapter
 
 class MusicService : MediaBrowserServiceCompat() {
@@ -16,7 +19,7 @@ class MusicService : MediaBrowserServiceCompat() {
     }
 
     private val mediaSession: MediaSessionCompat = MediaSessionCompat(this, "MusicService")
-    private val playback: PlayerAdapter? = null
+    private val playback
     private val mediaNotificationManager = MediaNotificationManager(this)
 
     override fun onLoadChildren(
@@ -64,7 +67,55 @@ class MusicService : MediaBrowserServiceCompat() {
                 return
             }
 
-            val mediaId = playList.get(queueIndex).description.mediaId
+            val mediaId = playList[queueIndex].description.mediaId
+            preparedMedia = MusicLibrary.getMetadata(this@MusicService, mediaId ?: "")
+            mediaSession.setMetadata(preparedMedia)
+
+            if (!mediaSession.isActive) {
+                mediaSession.isActive = true
+            }
+        }
+
+        override fun onPlay() {
+            if (!isReadyToPlay()) {
+                // Nothing to play
+                return
+            }
+
+            if (preparedMedia == null) {
+                onPrepare()
+            }
+
+            playback?.playFromMedia(preparedMedia)
+        }
+
+        override fun onPause() {
+            playback?.pause()
+        }
+
+
+        private fun isReadyToPlay(): Boolean {
+            return playList.isNotEmpty()
+        }
+    }
+
+    // MediaPlayerAdapter Callback: MediaPlayerAdapter state -> MusicService.
+    inner class MediaPlayerListener : PlaybackInfoListener() {
+
+        private val serviceManager = ServiceManager()
+
+        override fun onPlaybackStateChange(state: PlaybackStateCompat) {
+            // Report the state to the MediaSession.
+        }
+
+        inner class ServiceManager {
+            private fun moveServiceToStartedState(state: PlaybackStateCompat) {
+                val notification = mediaNotificationManager.getNotificationManager(
+                    playback.getCurrentMedia(),
+                    state,
+                    sessionToken
+                )
+            }
 
         }
     }

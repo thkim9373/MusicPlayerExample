@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
 import android.media.MediaMetadata
+import android.support.v4.media.MediaMetadataCompat
 
 abstract class PlayerAdapter(private val mApplicationContext: Context) {
 
@@ -34,9 +35,9 @@ abstract class PlayerAdapter(private val mApplicationContext: Context) {
 
     private var mPlayOnAudioFocus: Boolean = false
 
-    abstract fun playFromMedia(metaData: MediaMetadata)
+    abstract fun playFromMedia(metaData: MediaMetadataCompat?)
 
-    abstract fun getCurrentMedia(): MediaMetadata
+    abstract fun getCurrentMedia(): MediaMetadataCompat
 
     abstract fun isPlaying(): Boolean
 
