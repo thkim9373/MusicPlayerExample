@@ -1,6 +1,7 @@
 package com.hoony.musicplayerexample.player
 
 import android.content.Context
+import android.os.SystemClock
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import com.google.android.exoplayer2.*
@@ -12,8 +13,15 @@ import com.google.android.exoplayer2.video.VideoListener
 
 class MediaPlayerAdapter(
     context: Context,
-    listener: PlaybackInfoListener
+    private val listener: PlaybackInfoListener
 ) : PlayerAdapter(context) {
+
+    private var state: Int = -1
+    private var currentMediaPlayedToCompletion: Boolean = false
+
+    // Work-around for a MediaPlayer bug related to the behavior of MediaPlayer.seekTo()
+    // while not playing.
+    private var seekWhileNotPlaying: Int = -1
 
     private val exoPlayer = ExoPlayerFactory.newSimpleInstance(context)
 
@@ -118,6 +126,34 @@ class MediaPlayerAdapter(
 
     override fun onPause() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    // This is the main reducer for the player state machine.
+    private fun setNewState(newPlayState: Int) {
+        state = newPlayState
+
+        // Whether playback goes to completion, or whether it is stopped, the
+        // mCurrentMediaPlayedToCompletion is set to true.
+        if (state == PlaybackStateCompat.STATE_STOPPED) {
+            currentMediaPlayedToCompletion = true
+        }
+
+        // Work around for MediaPlayer.getCurrentPosition() when it changes while not playing.
+        val reportPosition: Long = if (seekWhileNotPlaying >= 0) {
+            seekWhileNotPlaying.toLong()
+        } else {
+            exoPlayer.currentPosition
+        }
+
+        val stateBuilder = PlaybackStateCompat.Builder()
+        stateBuilder.setActions()
+        stateBuilder.setState(
+            this.state,
+            reportPosition,
+            1.0f,
+            SystemClock.elapsedRealtime())
+            this.listener.onPlaybackStateChange(stateBuilder.build())
+        )
     }
 
     override fun onStop() {
