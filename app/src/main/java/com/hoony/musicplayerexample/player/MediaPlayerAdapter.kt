@@ -10,8 +10,11 @@ import android.support.v4.media.session.PlaybackStateCompat
  * Exposes the functionality of the [MediaPlayer] and implements the [PlayerAdapter]
  * so that [MusicPlayerFragment] can control music playback.
  */
-class MediaPlayerAdapter(context: Context, listener: PlaybackInfoListener) :
-    PlayerAdapter(context) {
+class MediaPlayerAdapter(
+    context: Context,
+    listener: PlaybackInfoListener
+) : PlayerAdapter(context) {
+
     private val mContext: Context = context.applicationContext
     private var mMediaPlayer: MediaPlayer? = null
     private var mFilename: String? = null
@@ -51,12 +54,17 @@ class MediaPlayerAdapter(context: Context, listener: PlaybackInfoListener) :
     override fun playFromMedia(metaData: MediaMetadataCompat?) {
         mCurrentMedia = metaData
         val mediaId = metaData?.description?.mediaId
-        playFile(MusicLibrary.getMusicFileName(mediaId!!)!!)
+        playFile(MusicLibrary.getMusicFilename(mediaId!!)!!)
     }
 
-    override fun getCurrentMedia(): MediaMetadataCompat {
-        return mCurrentMedia!!
-    }
+    override val currentMedia: MediaMetadataCompat?
+        get() {
+            TODO()
+        }
+
+    override val isPlaying: Boolean
+        get() = mMediaPlayer?.isPlaying ?: false
+
 
     private fun playFile(filename: String) {
         var mediaChanged = mFilename == null || filename != mFilename
@@ -67,7 +75,7 @@ class MediaPlayerAdapter(context: Context, listener: PlaybackInfoListener) :
             mCurrentMediaPlayedToCompletion = false
         }
         if (!mediaChanged) {
-            if (!isPlaying()) {
+            if (!isPlaying) {
                 play()
             }
             return
@@ -106,10 +114,6 @@ class MediaPlayerAdapter(context: Context, listener: PlaybackInfoListener) :
             mMediaPlayer!!.release()
             mMediaPlayer = null
         }
-    }
-
-    override fun isPlaying(): Boolean {
-        return mMediaPlayer != null && mMediaPlayer!!.isPlaying
     }
 
     override fun onPlay() {

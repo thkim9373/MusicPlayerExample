@@ -5,41 +5,45 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.media.AudioManager
-import android.media.MediaMetadata
+import android.media.AudioManager.OnAudioFocusChangeListener
 import android.support.v4.media.MediaMetadataCompat
 
-abstract class PlayerAdapter(private val mApplicationContext: Context) {
+/**
+ * Abstract player implementation that handles playing music with proper handling of headphones
+ * and audio focus.
+ */
+abstract class PlayerAdapter(context: Context) {
 
     companion object {
-        private const val MEDIA_VOLUME_DEFAULT: Float = 1.0f
-        private const val MEDIA_VOLUME_DUCK: Float = 0.2f
-
-        private val AUDIO_NOISY_INTENT_FILTER: IntentFilter =
+        private const val MEDIA_VOLUME_DEFAULT = 1.0f
+        private const val MEDIA_VOLUME_DUCK = 0.2f
+        private val AUDIO_NOISY_INTENT_FILTER =
             IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
     }
 
-    private val mAudioManager: AudioManager =
-        mApplicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    private val mAudioFocusHelper: AudioFocusHelper = AudioFocusHelper()
+    private val mApplicationContext: Context = context.applicationContext
+    private val mAudioManager: AudioManager
+    private val mAudioFocusHelper: AudioFocusHelper
+    private var mPlayOnAudioFocus = false
+    abstract fun playFromMedia(metadata: MediaMetadataCompat?)
+    abstract val currentMedia: MediaMetadataCompat?
+    abstract val isPlaying: Boolean
 
-    private var mAudioNoisyReceiverRegistered: Boolean = false
-    private val mAudioNoisyReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (AudioManager.ACTION_AUDIO_BECOMING_NOISY == intent?.action) {
-                if (isPlaying()) {
+    init {
+        mAudioManager = mApplicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        mAudioFocusHelper = AudioFocusHelper()
+    }
+
+    private var mAudioNoisyReceiverRegistered = false
+    private val mAudioNoisyReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (AudioManager.ACTION_AUDIO_BECOMING_NOISY == intent.action) {
+                if (isPlaying) {
                     pause()
                 }
             }
         }
     }
-
-    private var mPlayOnAudioFocus: Boolean = false
-
-    abstract fun playFromMedia(metaData: MediaMetadataCompat?)
-
-    abstract fun getCurrentMedia(): MediaMetadataCompat
-
-    abstract fun isPlaying(): Boolean
 
     fun play() {
         if (mAudioFocusHelper.requestAudioFocus()) {
@@ -48,18 +52,23 @@ abstract class PlayerAdapter(private val mApplicationContext: Context) {
         }
     }
 
-    abstract fun onPlay()
+    /**
+     * Called when media is ready to be played and indicates the app has audio focus.
+     */
+    protected abstract fun onPlay()
 
     fun pause() {
         if (!mPlayOnAudioFocus) {
             mAudioFocusHelper.abandonAudioFocus()
         }
-
         unregisterAudioNoisyReceiver()
         onPause()
     }
 
-    abstract fun onPause()
+    /**
+     * Called when media must be paused.
+     */
+    protected abstract fun onPause()
 
     fun stop() {
         mAudioFocusHelper.abandonAudioFocus()
@@ -67,12 +76,14 @@ abstract class PlayerAdapter(private val mApplicationContext: Context) {
         onStop()
     }
 
-    abstract fun onStop()
+    /**
+     * Called when the media must be stopped. The player should clean up resources at this
+     * point.
+     */
+    protected abstract fun onStop()
 
     abstract fun seekTo(position: Long)
-
     abstract fun setVolume(volume: Float)
-
     private fun registerAudioNoisyReceiver() {
         if (!mAudioNoisyReceiverRegistered) {
             mApplicationContext.registerReceiver(mAudioNoisyReceiver, AUDIO_NOISY_INTENT_FILTER)
@@ -81,21 +92,23 @@ abstract class PlayerAdapter(private val mApplicationContext: Context) {
     }
 
     private fun unregisterAudioNoisyReceiver() {
-        if (!mAudioNoisyReceiverRegistered) {
+        if (mAudioNoisyReceiverRegistered) {
             mApplicationContext.unregisterReceiver(mAudioNoisyReceiver)
             mAudioNoisyReceiverRegistered = false
         }
     }
 
-    private inner class AudioFocusHelper : AudioManager.OnAudioFocusChangeListener {
-
+    /**
+     * Helper class for managing audio focus related tasks.
+     */
+    private inner class AudioFocusHelper : OnAudioFocusChangeListener {
         fun requestAudioFocus(): Boolean {
             val result = mAudioManager.requestAudioFocus(
                 this,
                 AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN
             )
-            return result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+            return result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
         }
 
         fun abandonAudioFocus() {
@@ -105,21 +118,17 @@ abstract class PlayerAdapter(private val mApplicationContext: Context) {
         override fun onAudioFocusChange(focusChange: Int) {
             when (focusChange) {
                 AudioManager.AUDIOFOCUS_GAIN -> {
-                    if (mPlayOnAudioFocus && !isPlaying()) {
+                    if (mPlayOnAudioFocus && !isPlaying) {
                         play()
-                    } else if (isPlaying()) {
+                    } else if (isPlaying) {
                         setVolume(MEDIA_VOLUME_DEFAULT)
                     }
                     mPlayOnAudioFocus = false
                 }
-                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                    setVolume(MEDIA_VOLUME_DUCK)
-                }
-                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-                    if (isPlaying()) {
-                        mPlayOnAudioFocus = true
-                        pause()
-                    }
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> setVolume(MEDIA_VOLUME_DUCK)
+                AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> if (isPlaying) {
+                    mPlayOnAudioFocus = true
+                    pause()
                 }
                 AudioManager.AUDIOFOCUS_LOSS -> {
                     mAudioManager.abandonAudioFocus(this)
