@@ -17,7 +17,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.hoony.musicplayerexample.R
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
 
     enum class Tab(val id: Int) {
         HOME(R.id.tab_home)
@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.musicListLiveData.observe(
             this,
             Observer {
-                rvAlbumList.adapter = MusicListAdapter(it)
+                rvAlbumList.adapter = MusicListAdapter(it, this@MainActivity)
             }
         )
     }
@@ -110,5 +110,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         createView()
+    }
+
+    override fun onClick(position: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

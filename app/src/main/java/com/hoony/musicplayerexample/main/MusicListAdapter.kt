@@ -7,8 +7,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.hoony.musicplayerexample.R
 import com.hoony.musicplayerexample.data.Music
 
-class MusicListAdapter(private val musicList: List<Music>) :
-    RecyclerView.Adapter<MusicItemViewHolder>() {
+class MusicListAdapter(
+    private val musicList: List<Music>,
+    private val listener: OnItemClickListener
+) : RecyclerView.Adapter<MusicItemViewHolder>() {
+
+    interface OnItemClickListener {
+        fun onClick(position: Int)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MusicItemViewHolder {
         return MusicItemViewHolder(
@@ -28,6 +34,6 @@ class MusicListAdapter(private val musicList: List<Music>) :
     override fun onBindViewHolder(holder: MusicItemViewHolder, position: Int) {
         val music = musicList[position]
         holder.bind(music)
+        holder.setClickListener(listener)
     }
-
 }
