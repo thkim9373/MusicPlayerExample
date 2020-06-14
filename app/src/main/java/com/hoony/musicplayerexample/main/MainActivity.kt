@@ -19,10 +19,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
 
-    enum class Tab(val id: Int) {
-        HOME(R.id.tab_home)
-    }
-
     private val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
 
     private val viewModel: MainViewModel by viewModels()
@@ -43,7 +39,7 @@ class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
     }
 
     private fun createView() {
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_main_motion_layout)
 
         setView()
         setObserver()

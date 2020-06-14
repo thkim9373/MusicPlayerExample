@@ -9,7 +9,14 @@ import com.hoony.musicplayerexample.databinding.ItemAlbumBinding
 class PagerViewHolder(private val binding: ItemAlbumBinding) :
     RecyclerView.ViewHolder(binding.root) {
     fun bind(album: Album) {
-        binding.album = album
+//        binding.album = album
+
+        binding.let {
+            it.tvTitle.text = album.name
+            it.tvArtist.text = album.artist
+            it.tvNumOfSong.text = album.numOfSong.toString()
+        }
+
         if (album.uri != null) {
             binding.ivAlbumArt.visibility = View.VISIBLE
 
