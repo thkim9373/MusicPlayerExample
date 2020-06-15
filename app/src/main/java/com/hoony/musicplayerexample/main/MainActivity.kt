@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
     }
 
     private fun createView() {
-        setContentView(R.layout.activity_main_motion_layout)
+        setContentView(R.layout.activity_main)
 
         setView()
         setObserver()
@@ -64,6 +64,12 @@ class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
             this,
             Observer {
                 rvAlbumList.adapter = MusicListAdapter(it, this@MainActivity)
+            }
+        )
+        viewModel.playMusicLiveData.observe(
+            this,
+            Observer {
+                
             }
         )
     }
@@ -109,6 +115,6 @@ class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
     }
 
     override fun onClick(position: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        viewModel.setPlayMusic(position)
     }
 }

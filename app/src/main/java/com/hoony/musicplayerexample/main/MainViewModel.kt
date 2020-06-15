@@ -102,4 +102,16 @@ class MainViewModel(application: Application, private val state: SavedStateHandl
             null
         )
     }
+
+    private val _playMusicMutableLiveData = MutableLiveData<Music>()
+    val playMusicLiveData: LiveData<Music>
+        get() = _playMusicMutableLiveData
+
+    fun setPlayMusic(position: Int) {
+        val music = this._musicListMutableLiveData.value?.get(position)
+
+        if (music != null) {
+            _playMusicMutableLiveData.postValue(music)
+        }
+    }
 }
