@@ -1,12 +1,16 @@
 package com.hoony.musicplayerexample.main
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.session.MediaControllerCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -14,7 +18,10 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.viewpager2.widget.ViewPager2
+import com.bumptech.glide.Glide
 import com.hoony.musicplayerexample.R
+import com.hoony.musicplayerexample.player.MediaBrowserHelper
+import com.hoony.musicplayerexample.service.MusicService
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
@@ -69,7 +76,7 @@ class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
         viewModel.playMusicLiveData.observe(
             this,
             Observer {
-                
+
             }
         )
     }
@@ -116,5 +123,44 @@ class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
 
     override fun onClick(position: Int) {
         viewModel.setPlayMusic(position)
+    }
+
+    private inner class MediaBrowserConnection(private val context: Context) :
+        MediaBrowserHelper(context, MusicService::class.java) {
+
+        override fun onConnected(mediaController: MediaControllerCompat) {
+            super.onConnected(mediaController)
+
+            val state: PlaybackStateCompat = mediaController.playbackState
+
+            viewModel.isPlaying = state.state == PlaybackStateCompat.STATE_PLAYING
+            if (viewModel.isPlaying) {
+                Glide.with(context)
+                    .load(R.drawable.vector_pause)
+                    .into(ivPlayPause)
+            } else {
+                Glide.with(context)
+                    .load(R.drawable.vector_play)
+                    .into(ivPlayPause)
+            }
+
+            // TODO
+        }
+
+        override fun onChildrenLoaded(
+            parentId: String,
+            children: List<MediaBrowserCompat.MediaItem>
+        ) {
+            super.onChildrenLoaded(parentId, children)
+
+            val mediaController: MediaControllerCompat = this.mediaController
+
+            // Queue 에 Media item 추가
+            for (mediaItem in children) {
+                mediaController.addQueueItem(mediaItem.description)
+            }
+
+            mediaController.transportControls.prepare()
+        }
     }
 }

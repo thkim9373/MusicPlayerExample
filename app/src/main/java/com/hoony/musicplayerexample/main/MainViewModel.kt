@@ -12,6 +12,8 @@ import com.hoony.musicplayerexample.data.Music
 class MainViewModel(application: Application, private val state: SavedStateHandle) :
     AndroidViewModel(application) {
 
+    var isPlaying: Boolean = false
+
     val albumListLiveData: LiveData<List<Album>> = liveData {
         val audioInfo = getAudioInfo()
 
