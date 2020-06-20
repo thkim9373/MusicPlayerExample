@@ -9,8 +9,10 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -21,14 +23,32 @@ import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.hoony.musicplayerexample.R
 import com.hoony.musicplayerexample.player.MediaBrowserHelper
+import com.hoony.musicplayerexample.player.MusicLibrary
 import com.hoony.musicplayerexample.service.MusicService
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
+class MainActivity : AppCompatActivity(), View.OnClickListener,
+    MusicListAdapter.OnItemClickListener {
 
     private val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
 
     private val viewModel: MainViewModel by viewModels()
+
+    private val mediaBrowserHelper: MediaBrowserHelper = MediaBrowserConnection(this)
+
+    private var isFirstLoading: Boolean = false
+    private var isPlaying: Boolean = false
+
+    override fun onStart() {
+        super.onStart()
+        mediaBrowserHelper.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        seekBar.disconnectController()
+        mediaBrowserHelper.onStart()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +71,8 @@ class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
         setView()
         setObserver()
         setListener()
+
+        mediaBrowserHelper.registerCallback(MediaBrowserListener())
     }
 
     private fun setView() {
@@ -87,6 +109,7 @@ class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
                 viewModel.getMusicList(position)
             }
         })
+        ivPlayPause.setOnClickListener(this)
     }
 
     override fun onRequestPermissionsResult(
@@ -121,7 +144,21 @@ class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
         createView()
     }
 
-    override fun onClick(position: Int) {
+    override fun onClick(view: View?) {
+        when (view?.id) {
+            R.id.ivPlayPause -> {
+
+            }
+            R.id.ivPrev -> {
+
+            }
+            R.id.ivNext -> {
+
+            }
+        }
+    }
+
+    override fun onItemClick(position: Int) {
         viewModel.setPlayMusic(position)
     }
 
@@ -134,17 +171,9 @@ class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
             val state: PlaybackStateCompat = mediaController.playbackState
 
             viewModel.isPlaying = state.state == PlaybackStateCompat.STATE_PLAYING
-            if (viewModel.isPlaying) {
-                Glide.with(context)
-                    .load(R.drawable.vector_pause)
-                    .into(ivPlayPause)
-            } else {
-                Glide.with(context)
-                    .load(R.drawable.vector_play)
-                    .into(ivPlayPause)
-            }
+            togglePlayPause(viewModel.isPlaying)
 
-            // TODO
+            seekBar.setMediaController(this@MainActivity, mediaController)
         }
 
         override fun onChildrenLoaded(
@@ -153,7 +182,7 @@ class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
         ) {
             super.onChildrenLoaded(parentId, children)
 
-            val mediaController: MediaControllerCompat = this.mediaController
+            val mediaController: MediaControllerCompat = mediaController
 
             // Queue 에 Media item 추가
             for (mediaItem in children) {
@@ -161,6 +190,48 @@ class MainActivity : AppCompatActivity(), MusicListAdapter.OnItemClickListener {
             }
 
             mediaController.transportControls.prepare()
+        }
+    }
+
+    private inner class MediaBrowserListener : MediaControllerCompat.Callback() {
+
+        override fun onPlaybackStateChanged(state: PlaybackStateCompat?) {
+
+            if (isFirstLoading) {
+                isFirstLoading = true
+                return
+            }
+
+            val changedState: Boolean = state?.state == PlaybackStateCompat.STATE_PLAYING
+            togglePlayPause(changedState)
+
+            isPlaying = changedState
+        }
+
+        override fun onMetadataChanged(metadata: MediaMetadataCompat?) {
+            if (metadata != null) {
+                tvTitle.text = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE)
+                Glide.with(this@MainActivity)
+                    .load(
+                        MusicLibrary.getAlbumBitmap(
+                            this@MainActivity,
+                            metadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
+                        )
+                    )
+                    .into(ivAlbumArt)
+            }
+        }
+    }
+
+    private fun togglePlayPause(isPlaying: Boolean) {
+        if (isPlaying) {
+            Glide.with(this)
+                .load(R.drawable.notification_pause)
+                .into(ivPlayPause)
+        } else {
+            Glide.with(this)
+                .load(R.drawable.notification_play_arrow)
+                .into(ivPlayPause)
         }
     }
 }

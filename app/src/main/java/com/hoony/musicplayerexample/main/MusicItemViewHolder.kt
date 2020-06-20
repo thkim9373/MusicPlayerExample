@@ -26,7 +26,7 @@ class MusicItemViewHolder(private val binding: ItemMusicBinding) :
     fun setClickListener(listener: MusicListAdapter.OnItemClickListener) {
         binding.clContainer.setOnClickListener {
             if (adapterPosition != RecyclerView.NO_POSITION) {
-                listener.onClick(adapterPosition)
+                listener.onItemClick(adapterPosition)
             }
         }
     }

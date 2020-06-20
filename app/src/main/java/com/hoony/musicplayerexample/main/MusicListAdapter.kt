@@ -13,7 +13,7 @@ class MusicListAdapter(
 ) : RecyclerView.Adapter<MusicItemViewHolder>() {
 
     interface OnItemClickListener {
-        fun onClick(position: Int)
+        fun onItemClick(position: Int)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MusicItemViewHolder {

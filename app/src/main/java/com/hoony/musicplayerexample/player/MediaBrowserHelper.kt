@@ -40,6 +40,7 @@ open class MediaBrowserHelper(
     private val mMediaBrowserSubscriptionCallback: MediaBrowserSubscriptionCallback
     private var mMediaBrowser: MediaBrowserCompat? = null
     private var mMediaController: MediaControllerCompat? = null
+
     fun onStart() {
         if (mMediaBrowser == null) {
             mMediaBrowser = MediaBrowserCompat(
@@ -119,7 +120,7 @@ open class MediaBrowserHelper(
                 Log.d(TAG, "getTransportControls: MediaController is null!")
                 throw IllegalStateException("MediaController is null!")
             }
-            return mMediaController!!.transportControls
+            return mMediaController?.transportControls!!
         }
 
     fun registerCallback(callback: MediaControllerCompat.Callback?) {

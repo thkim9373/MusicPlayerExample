@@ -22,11 +22,21 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clPlayerContainer"
         android:layout_width="0dp"
-        android:layout_height="64dp"
+        android:layout_height="wrap_content"
         android:background="@color/colorAccentAlpha"
+        android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
+
+        <com.hoony.musicplayerexample.player.MediaSeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:progress="50" />
 
         <com.makeramen.roundedimageview.RoundedImageView
             android:id="@+id/ivAlbumArt"
@@ -35,7 +45,7 @@
             android:layout_marginStart="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/seekBar"
             app:riv_corner_radius="24dp"
             tools:src="@mipmap/ic_launcher" />
 
@@ -49,7 +59,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/clControllerContainer"
             app:layout_constraintStart_toEndOf="@id/ivAlbumArt"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/seekBar"
             tools:text="Title" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -58,7 +68,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/seekBar">
 
             <ImageView
                 android:id="@+id/ivPrev"
